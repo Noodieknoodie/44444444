@@ -1,0 +1,11 @@
+# backend/config.yaml
+database:
+  office: C:/Users/{username}/Hohimer Wealth Management/Hohimer Company Portal - Company/Hohimer Team Shared 4-15-19/HohimerPro/database/401k_payments_LIVE.db
+  home: data/401k_payments_LIVE.db
+  test: data/401k_payments_test.db
+  fallback: data/401k_payments_master.db
+  backup:
+    office: C:/Users/{username}/Hohimer Wealth Management/Hohimer Company Portal - Company/Hohimer Team Shared 4-15-19/HohimerPro/database/backups
+    home: data/backup_dbs
+  document_dump: "\\\\server\\401k\\documents\\mail\\{year}\\"
+  client_documents_base: "\\\\server\\401k\\documents\\clients\\"
