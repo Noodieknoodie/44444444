@@ -11,3 +11,7 @@ aiofiles
 fastapi_utils
 typing-inspect
 requests
+PyPDF2 
+fuzzywuzzy 
+python-Levenshtein 
+pywin32

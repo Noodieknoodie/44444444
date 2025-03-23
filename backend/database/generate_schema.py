@@ -212,13 +212,13 @@ def main():
     # Assume project root is the current working directory
     project_root = Path.cwd()
     
-    parser.add_argument('--db', dest='database', default=str(project_root / "backend" / "data" / "401k_payments_LIVE.db"),
+    parser.add_argument('--db', dest='database', default=str(project_root / "backend" / "database" / "401k_local_dev.db"),
                         help='Path to SQLite database')
-    parser.add_argument('--compact', dest='compact_schema', default=str(project_root / "backend" / "data" / "compact_schema.txt"),
+    parser.add_argument('--compact', dest='compact_schema', default=str(project_root / "backend" / "database" / "compact_schema.txt"),
                         help='Output path for compact schema')
-    parser.add_argument('--sql', dest='sql_schema', default=str(project_root / "backend" / "data" / "schema.sql"),
+    parser.add_argument('--sql', dest='sql_schema', default=str(project_root / "backend" / "database" / "schema.sql"),
                         help='Output path for full SQL schema')
-    parser.add_argument('--data', dest='data_file', default=str(project_root / "backend" / "data" / "example_data.txt"),
+    parser.add_argument('--data', dest='data_file', default=str(project_root / "backend" / "database" / "example_data.txt"),
                         help='Output path for sample data')
     
     args = parser.parse_args()

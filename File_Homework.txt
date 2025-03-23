@@ -1,0 +1,192 @@
+
+
+## 2. Immediate Project Setup (Home Environment) (DONE)
+
+### Create Config Setup
+
+1. Create a config directory in your project root:
+```
+mkdir C:\CODING\401401401\config
+```
+
+2. Create `config.py` in that directory with:
+```python
+import os
+from pathlib import Path
+
+class Config:
+    # Base configuration (shared between environments)
+    APP_NAME = "401k Document Management"
+    
+    # Environment detection
+    @classmethod
+    def is_development(cls):
+        return not os.path.exists(Path(os.path.expanduser("~")) / "Hohimer Wealth Management")
+    
+    # Database paths
+    @classmethod
+    def get_db_path(cls):
+        if cls.is_development():
+            return r"C:\CODING\401401401\backend\database\401k_local_dev.db"
+        else:
+            shared_base = cls.find_shared_folder()
+            return f"{shared_base}/HohimerPro/database/401k_payments_LIVE.db"
+    
+    # Document storage
+    @classmethod
+    def get_document_storage_path(cls):
+        if cls.is_development():
+            # Local dev documents folder
+            path = r"C:\CODING\401401401\document_storage"
+            os.makedirs(path, exist_ok=True)
+            return path
+        else:
+            shared_base = cls.find_shared_folder()
+            return f"{shared_base}/compliance/mail/2025"
+    
+    # Client folders root
+    @classmethod
+    def get_clients_root(cls):
+        if cls.is_development():
+            # Mock client folders for development
+            path = r"C:\CODING\401401401\mock_client_folders"
+            os.makedirs(path, exist_ok=True)
+            return path
+        else:
+            shared_base = cls.find_shared_folder()
+            return f"{shared_base}/401k Clients"
+    
+    # Find shared folder for production environment
+    @classmethod
+    def find_shared_folder(cls):
+        user_profile = os.path.expanduser("~")
+        shared_path = Path(user_profile) / "Hohimer Wealth Management" / "Hohimer Company Portal - Company" / "Hohimer Team Shared 4-15-19"
+        
+        if shared_path.exists():
+            return str(shared_path)
+        else:
+            raise Exception("Shared folder not found. Is OneDrive synced?")
+    
+    # Backup database path
+    @classmethod
+    def get_backup_path(cls):
+        if cls.is_development():
+            path = r"C:\CODING\401401401\db_backups"
+            os.makedirs(path, exist_ok=True)
+            return path
+        else:
+            shared_base = cls.find_shared_folder()
+            return f"{shared_base}/HohimerPro/database/db_backups"
+```
+
+3. Create mock folder structure for development testing: (DONE)
+```
+mkdir C:\CODING\401401401\document_storage
+mkdir C:\CODING\401401401\mock_client_folders
+mkdir C:\CODING\401401401\mock_client_folders\ABC_Company\Consulting Fee\2025
+mkdir C:\CODING\401401401\mock_client_folders\XYZ_Inc\Checks\2025
+mkdir C:\CODING\401401401\db_backups
+```
+
+## 3. Database Changes
+
+Add these tables to your development database:
+
+```sql
+-- Run this SQL against your C:\CODING\401401401\backend\database\401k_local_dev.db
+
+-- Core document information
+CREATE TABLE documents (
+    document_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    provider_id INTEGER NOT NULL,
+    document_type TEXT NOT NULL,
+    received_date TEXT NOT NULL,
+    file_name TEXT NOT NULL,
+    file_path TEXT NOT NULL,
+    metadata TEXT,
+    uploaded_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (provider_id) REFERENCES providers(provider_id)
+);
+
+-- Many-to-many: documents to clients
+CREATE TABLE document_clients (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    document_id INTEGER NOT NULL,
+    client_id INTEGER NOT NULL,
+    FOREIGN KEY (document_id) REFERENCES documents(document_id) ON DELETE CASCADE,
+    FOREIGN KEY (client_id) REFERENCES clients(client_id) ON DELETE CASCADE,
+    UNIQUE(document_id, client_id)
+);
+
+-- Many-to-many: documents to payments
+CREATE TABLE payment_documents (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    payment_id INTEGER NOT NULL,
+    document_id INTEGER NOT NULL,
+    FOREIGN KEY (payment_id) REFERENCES payments(payment_id) ON DELETE CASCADE,
+    FOREIGN KEY (document_id) REFERENCES documents(document_id) ON DELETE CASCADE,
+    UNIQUE(payment_id, document_id)
+);
+
+-- Maps client IDs to their actual folder names
+CREATE TABLE client_folders (
+    client_id INTEGER PRIMARY KEY,
+    actual_folder_name TEXT NOT NULL,
+    FOREIGN KEY (client_id) REFERENCES clients(client_id)
+);
+
+-- Add indexes for performance
+CREATE INDEX idx_document_clients_doc_id ON document_clients(document_id);
+CREATE INDEX idx_document_clients_client_id ON document_clients(client_id);
+CREATE INDEX idx_payment_documents_payment_id ON payment_documents(payment_id);
+CREATE INDEX idx_payment_documents_document_id ON payment_documents(document_id);
+```
+
+## 4. Office Homework for Tomorrow
+
+1. **Database Script**: Bring the SQL script to add the tables to the production database
+2. **Path Verification**: Confirm these paths exist (or create them):
+   - `[Shared OneDrive]/compliance/mail/2025/`
+   - `[Shared OneDrive]/HohimerPro/database/db_backups/`
+3. **Client Folder Mapping**: Create a script to populate the `client_folders` table by scanning actual folders
+4. **Test Upload**: Test the document upload process with a real document
+
+## 5. Implementation TODOs
+
+### Backend Implementation
+- Create document upload route in FastAPI
+- Implement PDF metadata embedding using PyPDF2
+- Build shortcut creation function for Windows (.lnk files)
+- Implement automatic payment matching logic
+- Create route to fetch documents linked to specific payments
+
+### Frontend Implementation
+- Build document upload form with:
+  - Document type dropdown
+  - Provider dropdown (filtered by active providers)
+  - Client multi-select (filtered by provider)
+  - Date picker for received date
+  - File upload component
+- Add "View Attachment" button to payment list items
+- Create PDF viewer component
+- Implement document search functionality
+
+## 6. Foundational Action Items (Your Next Steps)
+
+1. **Setup Config**: Copy the `config.py` code above to establish your environment detection
+2. **Create Database Tables**: Run the SQL script to add document tables to your development database
+3. **Install Required Libraries**:
+   ```
+   pip install PyPDF2 fuzzywuzzy python-Levenshtein pywin32
+   ```
+4. **Create Document Service File**: Create `backend/services/document_service.py` with core functions:
+   - `save_document()` - Saves uploaded file and creates database entries
+   - `match_document_to_payments()` - Links documents to payments
+   - `create_client_shortcuts()` - Creates shortcuts in client folders
+
+5. **Test With Mock Data**: Before building the UI, create a simple test script to verify:
+   - File saving
+   - Database entry creation
+   - Shortcut generation (in mock folders)
+
+The most important immediate step is setting up the config system to detect your environment and the necessary database tables. With those in place, you can incrementally build out the functionality.
