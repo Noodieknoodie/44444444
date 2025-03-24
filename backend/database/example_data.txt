@@ -1,28 +1,32 @@
 ----------------
 SAMPLE DATA
 ----------------
+-- TABLE: client_folders
+client_id, actual_folder_name
+30, ABC_Company
+31, XYZ_Inc
 -- TABLE: client_providers
 client_id, provider_id, start_date, end_date, is_active
 1, 8, 2019-05-03, NULL, 1
 2, 12, 2019-09-16, NULL, 1
 3, 12, 2019-07-01, NULL, 1
-17, 3, 2024-03-11, NULL, 1
 18, 6, 2019-07-09, NULL, 1
 19, 1, 2021-04-14, NULL, 1
-16, 5, 2021-04-04, NULL, 1
-28, 5, 2020-06-29, NULL, 1
+20, 7, 2020-02-13, NULL, 1
 29, 10, 2023-10-19, NULL, 1
+30, 6, 2024-01-15, NULL, 1
+31, 14, 2024-02-10, NULL, 1
 -- TABLE: clients
 client_id, display_name, full_name, ima_signed_date, valid_from, valid_to
 1, AirSea America, THE TRUSTEES OF AIRSEA AMERICA INC 401K PLAN AND TRUST, 2020-07-31, 2025-03-14 04:04:16, NULL
 2, Bumgardner Architects (ABC), THE BUMGARDNER ARCHITECTS A WASHINGTON CORPORATION PROFIT, 2020-08-02, 2025-03-14 04:04:16, NULL
 3, Amplero, AMPLERO INC 401K, 2019-03-15, 2025-03-14 04:04:16, NULL
-14, Hos Bros, HOS BROS CONSTRUCTION INC, 2019-05-08, 2025-03-14 04:04:16, NULL
 15, Lavle USA, LAVLE USA INC 401K, 2019-03-22, 2025-03-14 04:04:16, NULL
 16, Lynnwood Honda, LYNNWOOD ENTERPRISES INC 401K, 2020-02-06, 2025-03-14 04:04:16, NULL
-27, XFire, XFIRE INDUSTRIES INC 401K PLAN, NULL, 2025-03-14 04:04:16, NULL
-28, Younker Motors, YOUNKER MOTORS, 2020-07-30, 2025-03-14 04:04:16, NULL
+17, Nordic Museum, NATIONAL NORDIC MUSEUM, NULL, 2025-03-14 04:04:16, NULL
 29, Youth Dynamics, YOUTH DYNAMICS, NULL, 2025-03-14 04:04:16, NULL
+30, ABC Company, ABC Testing Company LLC, 2024-01-15, 2025-03-23 23:19:07, NULL
+31, XYZ Inc, XYZ Incorporated, 2024-02-10, 2025-03-23 23:19:07, NULL
 -- TABLE: contacts
 contact_id, client_id, contact_type, contact_name, phone, email, fax, physical_address, mailing_address, valid_from, valid_to
 1, 1, Primary, Donald Jay, 253-395-9551, djay@asamerica.com, NULL, 3500 West Vally HWY, Ste B-106, Auburn, WA 98001, 3500 West Vally HWY, Ste B-106, Auburn, WA 98001, 2025-03-14 04:04:33, NULL
@@ -39,12 +43,12 @@ contract_id, client_id, contract_number, provider_id, fee_type, percent_rate, fl
 1, 1, 134565, 8, percentage, 0.0007, NULL, monthly, 18, 2025-03-23 04:25:41, NULL, 1
 2, 2, NULL, 12, percentage, 0.000416, NULL, monthly, 35, 2025-03-23 04:25:41, NULL, 1
 3, 3, 551296, 12, flat, NULL, 666.66, monthly, NULL, 2025-03-23 04:25:41, NULL, 1
-17, 17, NULL, 3, flat, NULL, 1000.0, quarterly, 15, 2025-03-23 04:25:50, NULL, 1
 18, 18, 24277, 6, flat, NULL, 2499.99, quarterly, 32, 2025-03-23 04:25:50, NULL, 1
 19, 19, NULL, 1, flat, NULL, 2000.0, quarterly, 18, 2025-03-23 04:25:50, NULL, 1
-33, 16, NULL, 5, flat, NULL, 3500.0, quarterly, NULL, 2025-03-23 04:25:57, NULL, 1
-34, 28, NULL, 5, percentage, 0.000667, NULL, monthly, 43, 2025-03-23 04:25:57, NULL, 1
+20, 20, 10127553, 7, flat, NULL, 6250.0, quarterly, 184, 2025-03-23 04:25:50, NULL, 1
 35, 29, NULL, 10, percentage, 0.001875, NULL, quarterly, 15, 2025-03-23 04:25:57, NULL, 1
+36, 30, CONTRACT-001, 6, percent, NULL, NULL, monthly, NULL, 2025-03-23 23:19:07, NULL, 1
+37, 31, CONTRACT-002, 14, percent, NULL, NULL, quarterly, NULL, 2025-03-23 23:19:07, NULL, 1
 -- TABLE: date_dimension
 period_date, year, month, month_name, quarter, period_key_monthly, period_key_quarterly, display_label_monthly, display_label_quarterly, is_current_monthly, is_current_quarterly, is_previous_month, is_previous_quarter
 2020-01-01, 2020, 1, Jan, 1, 202001, 20201, Jan 2020, Q1 2020, 0, 0, 0, 0
@@ -56,6 +60,12 @@ period_date, year, month, month_name, quarter, period_key_monthly, period_key_qu
 2018-10-01, 2018, 10, Oct, 4, 201810, 20184, Oct 2018, Q4 2018, 0, 0, 0, 0
 2018-11-01, 2018, 11, Nov, 4, 201811, 20184, Nov 2018, Q4 2018, 0, 0, 0, 0
 2018-12-01, 2018, 12, Dec, 4, 201812, 20184, Dec 2018, Q4 2018, 0, 0, 0, 0
+-- TABLE: document_clients
+id, document_id, client_id
+1, 1, 30
+-- TABLE: documents
+document_id, provider_id, document_type, received_date, file_name, file_path, metadata, uploaded_at
+1, 6, Check, 2025-02-20, 20250323_162258_Fidelity_Check.pdf, C:\CODING\401401401\dev_environment\document_storage\20250323_162258_Fidelity_Check.pdf, NULL, 2025-03-23 23:22:58
 -- TABLE: payments
 payment_id, contract_id, client_id, received_date, total_assets, actual_fee, method, notes, valid_from, valid_to, applied_start_month, applied_start_month_year, applied_end_month, applied_end_month_year, applied_start_quarter, applied_start_quarter_year, applied_end_quarter, applied_end_quarter_year
 1, 1, 1, 2019-05-03, 824305, 547.51, Auto - Check, waiting on how John Hancock calculates fee payments, 2025-03-14 03:57:29, NULL, 4, 2019, 4, 2019, NULL, NULL, NULL, NULL
@@ -72,52 +82,45 @@ provider_id, provider_name, valid_from, valid_to
 1, Ascensus, 2025-03-22 04:30:56, NULL
 2, Ascensus Trust Company, 2025-03-22 04:30:56, NULL
 3, Capital Group / American Funds, 2025-03-22 04:30:56, NULL
-6, Fidelity, 2025-03-22 04:30:56, NULL
 7, Hunnex & Shoemaker, 2025-03-22 04:30:56, NULL
 8, John Hancock, 2025-03-22 04:30:56, NULL
-10, Principal, 2025-03-22 04:30:56, NULL
-11, Transamerica, 2025-03-22 04:30:56, NULL
+9, Pricipal, 2025-03-22 04:30:56, NULL
 12, Voya, 2025-03-22 04:30:56, NULL
--- TABLE: system_config
-config_key, config_value, description, last_updated
-client_folder_path, C:/Users/{username}/Hohimer Wealth Management/Hohimer Company Portal - Company/Hohimer Team Shared 4-15-19/401k Clients/{client_name}/, Path template for client folders, 2025-03-22 04:44:22
-shortcut_subfolder, Consulting Fee/{year}/, Subfolder within client folder where shortcuts are placed, 2025-03-22 04:44:25
-processing_frequency_minutes, 60, How often to check for new documents, 2025-03-22 04:44:31
-days_to_match_payment, 30, Number of days before/after document date to look for matching payments, 2025-03-22 04:44:35
-enable_shortcuts, true, Whether to create Windows shortcuts for documents, 2025-03-22 04:44:44
+13, Fidelity, 2025-03-23 23:19:07, NULL
+14, Vanguard, 2025-03-23 23:19:07, NULL
 -- VIEW: v_active_contracts
 contract_id, client_id, contract_number, provider_id, fee_type, percent_rate, flat_rate, payment_schedule, num_people, valid_from, valid_to, is_active
 1, 1, 134565, 8, percentage, 0.0007, NULL, monthly, 18, 2025-03-23 04:25:41, NULL, 1
 2, 2, NULL, 12, percentage, 0.000416, NULL, monthly, 35, 2025-03-23 04:25:41, NULL, 1
 3, 3, 551296, 12, flat, NULL, 666.66, monthly, NULL, 2025-03-23 04:25:41, NULL, 1
-17, 17, NULL, 3, flat, NULL, 1000.0, quarterly, 15, 2025-03-23 04:25:50, NULL, 1
 18, 18, 24277, 6, flat, NULL, 2499.99, quarterly, 32, 2025-03-23 04:25:50, NULL, 1
 19, 19, NULL, 1, flat, NULL, 2000.0, quarterly, 18, 2025-03-23 04:25:50, NULL, 1
-33, 16, NULL, 5, flat, NULL, 3500.0, quarterly, NULL, 2025-03-23 04:25:57, NULL, 1
-34, 28, NULL, 5, percentage, 0.000667, NULL, monthly, 43, 2025-03-23 04:25:57, NULL, 1
+20, 20, 10127553, 7, flat, NULL, 6250.0, quarterly, 184, 2025-03-23 04:25:50, NULL, 1
 35, 29, NULL, 10, percentage, 0.001875, NULL, quarterly, 15, 2025-03-23 04:25:57, NULL, 1
+36, 30, CONTRACT-001, 6, percent, NULL, NULL, monthly, NULL, 2025-03-23 23:19:07, NULL, 1
+37, 31, CONTRACT-002, 14, percent, NULL, NULL, quarterly, NULL, 2025-03-23 23:19:07, NULL, 1
 -- VIEW: v_all_missing_payment_periods
 client_id, payment_schedule, period_key, period_label, status
 1, monthly, 202210, Oct 2022, Missing
 1, monthly, 202502, Feb 2025, Missing
 2, monthly, 202407, Jul 2024, Missing
-13, monthly, 201911, Nov 2019, Missing
-14, quarterly, 20244, Q4 2024, Missing
-15, monthly, 202411, Nov 2024, Missing
-28, monthly, 202501, Jan 2025, Missing
-28, monthly, 202502, Feb 2025, Missing
-29, quarterly, 20244, Q4 2024, Missing
+17, quarterly, 20244, Q4 2024, Missing
+18, quarterly, 20244, Q4 2024, Missing
+20, quarterly, 20202, Q2 2020, Missing
+31, quarterly, 20242, Q2 2024, Missing
+31, quarterly, 20243, Q3 2024, Missing
+31, quarterly, 20244, Q4 2024, Missing
 -- VIEW: v_client_expected_periods
 client_id, payment_schedule, period_key_monthly, period_key_quarterly, period_key, period_label
 1, monthly, 202001, 20201, 202001, Jan 2020
 1, monthly, 202002, 20201, 202002, Feb 2020
 1, monthly, 202003, 20201, 202003, Mar 2020
-13, monthly, 202210, 20224, 202210, Oct 2022
-13, monthly, 202211, 20224, 202211, Nov 2022
-13, monthly, 202212, 20224, 202212, Dec 2022
-29, quarterly, 202404, 20242, 20242, Q2 2024
-29, quarterly, 202407, 20243, 20243, Q3 2024
-29, quarterly, 202410, 20244, 20244, Q4 2024
+13, monthly, 202307, 20233, 202307, Jul 2023
+13, monthly, 202308, 20233, 202308, Aug 2023
+13, monthly, 202309, 20233, 202309, Sep 2023
+31, quarterly, 202404, 20242, 20242, Q2 2024
+31, quarterly, 202407, 20243, 20243, Q3 2024
+31, quarterly, 202410, 20244, 20244, Q4 2024
 -- VIEW: v_client_payment_first
 client_id, display_name, first_payment_id, first_payment_date, first_payment_amount, first_payment_method, first_payment_assets, first_payment_period_key, first_payment_period
 1, AirSea America, 1, 2019-05-03, 547.51, Auto - Check, 824305, 201904, Apr 2019
@@ -131,29 +134,29 @@ client_id, display_name, first_payment_id, first_payment_date, first_payment_amo
 29, Youth Dynamics, 920, 2023-10-19, 665.49, NULL, NULL, 20233, Q3 2023
 -- VIEW: v_client_payment_last
 client_id, display_name, last_payment_id, last_payment_date, last_payment_amount, last_payment_method, last_payment_assets, last_payment_period_key, last_payment_period, days_since_last_payment
-1, AirSea America, 1084, 2025-03-21, 1250.0, Check, 1000000, 202503, Mar 2025, 2.0
-2, Bumgardner Architects (ABC), 129, 2024-07-31, 1906.77, Auto - ACH, NULL, 202406, Jun 2024, 235.0
-3, Amplero, 191, 2024-07-31, 666.66, Auto - Check, NULL, 202406, Jun 2024, 235.0
-14, Hos Bros, 486, 2024-10-16, 3750.0, Auto - ACH, NULL, 20243, Q3 2024, 158.0
-15, Lavle USA, 552, 2024-11-18, 54.13, Auto - Check, 129908, 202410, Oct 2024, 125.0
-16, Lynnwood Honda, 574, 2024-10-21, 3500.0, Auto - Check, NULL, 20243, Q3 2024, 153.0
-27, XFire, 1080, 2025-01-13, 155.1, Check, 61703.1, 20244, Q4 2024, 69.0
-28, Younker Motors, 1081, 2025-01-15, 1339.69, Check, 2009546.67, 202412, Dec 2024, 67.0
-29, Youth Dynamics, 924, 2024-10-14, 1043.09, NULL, NULL, 20243, Q3 2024, 160.0
+1, AirSea America, 1084, 2025-03-21, 1250.0, Check, 1000000, 202503, Mar 2025, 3.0
+2, Bumgardner Architects (ABC), 129, 2024-07-31, 1906.77, Auto - ACH, NULL, 202406, Jun 2024, 236.0
+3, Amplero, 191, 2024-07-31, 666.66, Auto - Check, NULL, 202406, Jun 2024, 236.0
+14, Hos Bros, 486, 2024-10-16, 3750.0, Auto - ACH, NULL, 20243, Q3 2024, 159.0
+15, Lavle USA, 552, 2024-11-18, 54.13, Auto - Check, 129908, 202410, Oct 2024, 126.0
+16, Lynnwood Honda, 574, 2024-10-21, 3500.0, Auto - Check, NULL, 20243, Q3 2024, 154.0
+27, XFire, 1080, 2025-01-13, 155.1, Check, 61703.1, 20244, Q4 2024, 70.0
+28, Younker Motors, 1081, 2025-01-15, 1339.69, Check, 2009546.67, 202412, Dec 2024, 68.0
+29, Youth Dynamics, 924, 2024-10-14, 1043.09, NULL, NULL, 20243, Q3 2024, 161.0
 -- VIEW: v_current_period
 today, current_year, current_month, current_month_for_billing, current_month_year_for_billing, current_quarter_for_billing, current_quarter_year_for_billing, current_monthly_key, current_quarterly_key
-2025-03-23, 2025, 3, 2, 2025, 4, 2024, 202502, 20244
+2025-03-24, 2025, 3, 2, 2025, 4, 2024, 202502, 20244
 -- VIEW: v_current_period_payment_status
 client_id, payment_schedule, period_key, period_label, status
 1, monthly, 202502, Feb 2025, Unpaid
 2, monthly, 202502, Feb 2025, Unpaid
 3, monthly, 202502, Feb 2025, Unpaid
-18, quarterly, 20244, Q4 2024, Unpaid
 19, quarterly, 20244, Q4 2024, Paid
 19, quarterly, 20244, Q4 2024, Paid
-16, quarterly, 20244, Q4 2024, Unpaid
-28, monthly, 202502, Feb 2025, Unpaid
+19, quarterly, 20244, Q4 2024, Paid
 29, quarterly, 20244, Q4 2024, Unpaid
+30, monthly, 202502, Feb 2025, Unpaid
+31, quarterly, 20244, Q4 2024, Unpaid
 -- VIEW: v_expanded_payment_periods
 payment_id, client_id, period_key, payment_schedule
 1, 1, 201904, monthly

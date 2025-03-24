@@ -145,3 +145,44 @@ class DocumentService:
                     shortcut.save()
                     
                     break
+    
+    @staticmethod
+    def match_document_to_payments(document_id, db_connection):
+        """Match document to payments based on received date and clients"""
+        cursor = db_connection.cursor()
+        
+        # Get document info
+        cursor.execute("SELECT provider_id, received_date FROM documents WHERE document_id = ?", (document_id,))
+        provider_id, received_date = cursor.fetchone()
+        
+        # Get client IDs associated with this document
+        cursor.execute("SELECT client_id FROM document_clients WHERE document_id = ?", (document_id,))
+        client_ids = [row[0] for row in cursor.fetchall()]
+        
+        # Find payments that match the document's received date and clients
+        for client_id in client_ids:
+            cursor.execute(
+                "SELECT payment_id FROM payments "
+                "WHERE client_id = ? AND received_date = ? AND valid_to IS NULL",
+                (client_id, received_date)
+            )
+            
+            matching_payments = cursor.fetchall()
+            
+            # Link document to matching payments
+            for row in matching_payments:
+                payment_id = row[0]
+                
+                # Check if this link already exists
+                cursor.execute(
+                    "SELECT 1 FROM payment_documents WHERE payment_id = ? AND document_id = ?",
+                    (payment_id, document_id)
+                )
+                
+                if not cursor.fetchone():
+                    cursor.execute(
+                        "INSERT INTO payment_documents (payment_id, document_id) VALUES (?, ?)",
+                        (payment_id, document_id)
+                    )
+        
+        db_connection.commit()

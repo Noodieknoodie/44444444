@@ -131,3 +131,175 @@ Notes: Comprehensive view of payment delinquency across all historical periods. 
 - Mixed fee structures (some flat fee, some percentage-based)
 - All monetary values stored without currency symbols (assumed USD)
 - Payment methods include 'wire', 'check', 'ach', 'credit_card'
+
+
+---
+
+
+
+###### RECENTLYY MODIFIED / ADDED 
+
+-- FOR CALCULATING SPLIT PAYYMENTS DISTRIBUTION
+
+
+CREATE VIEW v_split_payment_distribution AS
+-- Monthly periods
+SELECT
+    p.payment_id,
+    p.client_id,
+    c.display_name AS client_name,
+    p.received_date,
+    p.actual_fee AS total_payment_amount,
+    1 AS is_split_payment,
+    COUNT() OVER (PARTITION BY p.payment_id) AS total_periods_covered,
+    dd.period_key_monthly AS period_key,
+    dd.display_label_monthly AS period_label,
+    'monthly' AS payment_schedule,
+    ROUND(p.actual_fee / COUNT() OVER (PARTITION BY p.payment_id), 2) AS distributed_amount
+FROM v_payments p
+JOIN clients c ON p.client_id = c.client_id
+JOIN date_dimension dd ON
+    dd.period_key_monthly BETWEEN
+    (p.applied_start_month_year * 100 + p.applied_start_month) AND
+    (p.applied_end_month_year * 100 + p.applied_end_month)
+WHERE 
+    p.applied_start_month IS NOT NULL 
+    AND p.valid_to IS NULL 
+    AND p.is_split_payment = 1
+UNION ALL
+-- Quarterly periods
+SELECT
+    p.payment_id,
+    p.client_id,
+    c.display_name AS client_name,
+    p.received_date,
+    p.actual_fee AS total_payment_amount,
+    1 AS is_split_payment,
+    COUNT() OVER (PARTITION BY p.payment_id) AS total_periods_covered,
+    dd.period_key_quarterly AS period_key,
+    dd.display_label_quarterly AS period_label,
+    'quarterly' AS payment_schedule,
+    ROUND(p.actual_fee / COUNT() OVER (PARTITION BY p.payment_id), 2) AS distributed_amount
+FROM v_payments p
+JOIN clients c ON p.client_id = c.client_id
+JOIN date_dimension dd ON
+    dd.period_key_quarterly BETWEEN
+    (p.applied_start_quarter_year * 10 + p.applied_start_quarter) AND
+    (p.applied_end_quarter_year * 10 + p.applied_end_quarter)
+    AND dd.month IN (1, 4, 7, 10)
+WHERE 
+    p.applied_start_quarter IS NOT NULL 
+    AND p.valid_to IS NULL 
+    AND p.is_split_payment = 1
+
+sample...
+
+payment_id    client_id    client_name    received_date    total_payment_amount    is_split_payment    total_periods_covered    period_key    period_label    payment_schedule    distributed_amount
+445    13    Harper Engineering    2020-01-13    5000    1    3    202001    Jan 2020    monthly    1666.67
+445    13    Harper Engineering    2020-01-13    5000    1    3    202002    Feb 2020    monthly    1666.67
+445    13    Harper Engineering    2020-01-13    5000    1    3    201912    Dec 2019    monthly    1666.67
+
+...etc...
+
+and
+
+modification i think....
+
+CREATE VIEW v_payment_period_coverage AS
+SELECT
+    p.payment_id,
+    p.client_id,
+    p.received_date,
+    p.actual_fee,
+    p.is_split_payment,
+    -- For monthly payments
+    CASE WHEN p.applied_start_month IS NOT NULL THEN
+        (SELECT GROUP_CONCAT(period_key_monthly || '|' || display_label_monthly, '; ')
+         FROM date_dimension
+         WHERE period_key_monthly BETWEEN
+             (p.applied_start_month_year * 100 + p.applied_start_month) AND
+             (p.applied_end_month_year * 100 + p.applied_end_month))
+    ELSE NULL END AS covered_monthly_periods,
+    -- For quarterly payments
+    CASE WHEN p.applied_start_quarter IS NOT NULL THEN
+        (SELECT GROUP_CONCAT(period_key_quarterly || '|' || display_label_quarterly, '; ')
+         FROM date_dimension
+         WHERE period_key_quarterly BETWEEN
+             (p.applied_start_quarter_year * 10 + p.applied_start_quarter) AND
+             (p.applied_end_quarter_year * 10 + p.applied_end_quarter)
+             AND month IN (1, 4, 7, 10))
+    ELSE NULL END AS covered_quarterly_periods,
+    -- Number of periods covered (for proration calculation)
+    CASE
+        WHEN p.applied_start_month IS NOT NULL THEN
+            (SELECT COUNT(*)
+             FROM date_dimension
+             WHERE period_key_monthly BETWEEN
+                 (p.applied_start_month_year * 100 + p.applied_start_month) AND
+                 (p.applied_end_month_year * 100 + p.applied_end_month))
+        WHEN p.applied_start_quarter IS NOT NULL THEN
+            (SELECT COUNT(*)
+             FROM date_dimension
+             WHERE period_key_quarterly BETWEEN
+                 (p.applied_start_quarter_year * 10 + p.applied_start_quarter) AND
+                 (p.applied_end_quarter_year * 10 + p.applied_end_quarter)
+                 AND month IN (1, 4, 7, 10))
+        ELSE 1
+    END AS periods_covered,
+    -- NEW: Distributed amount per period
+    CASE
+        WHEN (
+            CASE
+                WHEN p.applied_start_month IS NOT NULL THEN
+                    (SELECT COUNT(*)
+                    FROM date_dimension
+                    WHERE period_key_monthly BETWEEN
+                        (p.applied_start_month_year * 100 + p.applied_start_month) AND
+                        (p.applied_end_month_year * 100 + p.applied_end_month))
+                WHEN p.applied_start_quarter IS NOT NULL THEN
+                    (SELECT COUNT(*)
+                    FROM date_dimension
+                    WHERE period_key_quarterly BETWEEN
+                        (p.applied_start_quarter_year * 10 + p.applied_start_quarter) AND
+                        (p.applied_end_quarter_year * 10 + p.applied_end_quarter)
+                        AND month IN (1, 4, 7, 10))
+                ELSE 1
+            END
+        ) > 1 THEN ROUND(p.actual_fee / (
+            CASE
+                WHEN p.applied_start_month IS NOT NULL THEN
+                    (SELECT COUNT(*)
+                    FROM date_dimension
+                    WHERE period_key_monthly BETWEEN
+                        (p.applied_start_month_year * 100 + p.applied_start_month) AND
+                        (p.applied_end_month_year * 100 + p.applied_end_month))
+                WHEN p.applied_start_quarter IS NOT NULL THEN
+                    (SELECT COUNT(*)
+                    FROM date_dimension
+                    WHERE period_key_quarterly BETWEEN
+                        (p.applied_start_quarter_year * 10 + p.applied_start_quarter) AND
+                        (p.applied_end_quarter_year * 10 + p.applied_end_quarter)
+                        AND month IN (1, 4, 7, 10))
+                ELSE 1
+            END
+        ), 2)
+        ELSE p.actual_fee
+    END AS distributed_amount_per_period
+FROM v_payments p
+WHERE p.valid_to IS NULL
+
+sample...
+
+etc...
+payment_id    client_id    received_date    actual_fee    is_split_payment    covered_monthly_periods    covered_quarterly_periods    periods_covered    distributed_amount_per_period
+442    12    2024-10-16    2250    0        20243|Q3 2024    1    2250.0
+442    12    2024-10-16    2250    0        20243|Q3 2024    1    2250.0
+442    12    2024-10-16    2250    0        20243|Q3 2024    1    2250.0
+443    13    2019-06-06    10000    0    201905|May 2019        1    10000.0
+444    13    2019-11-06    1666.62    0    201910|Oct 2019        1    1666.62
+445    13    2020-01-13    5000    1    202001|Jan 2020; 202002|Feb 2020; 201912|Dec 2019        3    1666.67
+446    13    2020-04-13    5000.01    1    202003|Mar 2020; 202004|Apr 2020; 202005|May 2020        3    1666.67
+447    13    2020-07-13    5000    1    202006|Jun 2020; 202007|Jul 2020; 202008|Aug 2020        3    1666.67
+448    13    2020-10-15    5000.01    1    202009|Sep 2020; 202010|Oct 2020; 202011|Nov 2020        3    1666.67
+
+etc... 

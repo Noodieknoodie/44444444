@@ -132,13 +132,6 @@ CREATE TABLE "providers" (
   valid_from DATETIME DEFAULT CURRENT_TIMESTAMP,
   valid_to DATETIME
 );
--- system_config
-CREATE TABLE system_config (
-    config_key TEXT PRIMARY KEY,
-    config_value TEXT NOT NULL,
-    description TEXT,
-    last_updated DATETIME DEFAULT CURRENT_TIMESTAMP
-);
 -- VIEW DEFINITIONS
 -- v_active_contracts
 CREATE VIEW v_active_contracts AS
