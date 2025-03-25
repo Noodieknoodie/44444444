@@ -80,6 +80,16 @@ CREATE TABLE document_clients (
     FOREIGN KEY (client_id) REFERENCES clients(client_id) ON DELETE CASCADE,
     UNIQUE(document_id, client_id)
 );
+-- document_payments
+CREATE TABLE "document_payments" (
+	"id"	INTEGER,
+	"payment_id"	INTEGER NOT NULL,
+	"document_id"	INTEGER NOT NULL,
+	PRIMARY KEY("id" AUTOINCREMENT),
+	UNIQUE("payment_id","document_id"),
+	FOREIGN KEY("document_id") REFERENCES "documents"("document_id") ON DELETE CASCADE,
+	FOREIGN KEY("payment_id") REFERENCES "payments"("payment_id") ON DELETE CASCADE
+);
 -- documents
 CREATE TABLE documents (
     document_id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -91,15 +101,6 @@ CREATE TABLE documents (
     metadata TEXT,
     uploaded_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (provider_id) REFERENCES providers(provider_id)
-);
--- payment_documents
-CREATE TABLE payment_documents (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    payment_id INTEGER NOT NULL,
-    document_id INTEGER NOT NULL,
-    FOREIGN KEY (payment_id) REFERENCES payments(payment_id) ON DELETE CASCADE,
-    FOREIGN KEY (document_id) REFERENCES documents(document_id) ON DELETE CASCADE,
-    UNIQUE(payment_id, document_id)
 );
 -- payments
 CREATE TABLE "payments" (
@@ -488,7 +489,46 @@ SELECT
                  (p.applied_end_quarter_year * 10 + p.applied_end_quarter)
                  AND month IN (1, 4, 7, 10))
         ELSE 1
-    END AS periods_covered
+    END AS periods_covered,
+    -- NEW: Distributed amount per period
+    CASE
+        WHEN (
+            CASE
+                WHEN p.applied_start_month IS NOT NULL THEN
+                    (SELECT COUNT(*)
+                    FROM date_dimension
+                    WHERE period_key_monthly BETWEEN
+                        (p.applied_start_month_year * 100 + p.applied_start_month) AND
+                        (p.applied_end_month_year * 100 + p.applied_end_month))
+                WHEN p.applied_start_quarter IS NOT NULL THEN
+                    (SELECT COUNT(*)
+                    FROM date_dimension
+                    WHERE period_key_quarterly BETWEEN
+                        (p.applied_start_quarter_year * 10 + p.applied_start_quarter) AND
+                        (p.applied_end_quarter_year * 10 + p.applied_end_quarter)
+                        AND month IN (1, 4, 7, 10))
+                ELSE 1
+            END
+        ) > 1 THEN ROUND(p.actual_fee / (
+            CASE
+                WHEN p.applied_start_month IS NOT NULL THEN
+                    (SELECT COUNT(*)
+                    FROM date_dimension
+                    WHERE period_key_monthly BETWEEN
+                        (p.applied_start_month_year * 100 + p.applied_start_month) AND
+                        (p.applied_end_month_year * 100 + p.applied_end_month))
+                WHEN p.applied_start_quarter IS NOT NULL THEN
+                    (SELECT COUNT(*)
+                    FROM date_dimension
+                    WHERE period_key_quarterly BETWEEN
+                        (p.applied_start_quarter_year * 10 + p.applied_start_quarter) AND
+                        (p.applied_end_quarter_year * 10 + p.applied_end_quarter)
+                        AND month IN (1, 4, 7, 10))
+                ELSE 1
+            END
+        ), 2)
+        ELSE p.actual_fee
+    END AS distributed_amount_per_period
 FROM v_payments p
 WHERE p.valid_to IS NULL;
 -- v_payments
@@ -520,15 +560,65 @@ LEFT JOIN date_dimension dm ON
 LEFT JOIN date_dimension dq ON
   (p.applied_start_quarter_year * 10 + p.applied_start_quarter) = dq.period_key_quarterly
 WHERE p.valid_to IS NULL;
+-- v_split_payment_distribution
+CREATE VIEW v_split_payment_distribution AS
+-- Monthly periods
+SELECT
+    p.payment_id,
+    p.client_id,
+    c.display_name AS client_name,
+    p.received_date,
+    p.actual_fee AS total_payment_amount,
+    1 AS is_split_payment,
+    COUNT(*) OVER (PARTITION BY p.payment_id) AS total_periods_covered,
+    dd.period_key_monthly AS period_key,
+    dd.display_label_monthly AS period_label,
+    'monthly' AS payment_schedule,
+    ROUND(p.actual_fee / COUNT(*) OVER (PARTITION BY p.payment_id), 2) AS distributed_amount
+FROM v_payments p
+JOIN clients c ON p.client_id = c.client_id
+JOIN date_dimension dd ON
+    dd.period_key_monthly BETWEEN
+    (p.applied_start_month_year * 100 + p.applied_start_month) AND
+    (p.applied_end_month_year * 100 + p.applied_end_month)
+WHERE
+    p.applied_start_month IS NOT NULL
+    AND p.valid_to IS NULL
+    AND p.is_split_payment = 1
+UNION ALL
+-- Quarterly periods
+SELECT
+    p.payment_id,
+    p.client_id,
+    c.display_name AS client_name,
+    p.received_date,
+    p.actual_fee AS total_payment_amount,
+    1 AS is_split_payment,
+    COUNT(*) OVER (PARTITION BY p.payment_id) AS total_periods_covered,
+    dd.period_key_quarterly AS period_key,
+    dd.display_label_quarterly AS period_label,
+    'quarterly' AS payment_schedule,
+    ROUND(p.actual_fee / COUNT(*) OVER (PARTITION BY p.payment_id), 2) AS distributed_amount
+FROM v_payments p
+JOIN clients c ON p.client_id = c.client_id
+JOIN date_dimension dd ON
+    dd.period_key_quarterly BETWEEN
+    (p.applied_start_quarter_year * 10 + p.applied_start_quarter) AND
+    (p.applied_end_quarter_year * 10 + p.applied_end_quarter)
+    AND dd.month IN (1, 4, 7, 10)
+WHERE
+    p.applied_start_quarter IS NOT NULL
+    AND p.valid_to IS NULL
+    AND p.is_split_payment = 1;
 -- INDEX DEFINITIONS
 -- idx_document_clients_client_id
 CREATE INDEX idx_document_clients_client_id ON document_clients(client_id);
 -- idx_document_clients_doc_id
 CREATE INDEX idx_document_clients_doc_id ON document_clients(document_id);
 -- idx_payment_documents_document_id
-CREATE INDEX idx_payment_documents_document_id ON payment_documents(document_id);
+CREATE INDEX idx_payment_documents_document_id ON "document_payments"(document_id);
 -- idx_payment_documents_payment_id
-CREATE INDEX idx_payment_documents_payment_id ON payment_documents(payment_id);
+CREATE INDEX idx_payment_documents_payment_id ON "document_payments"(payment_id);
 -- idx_payments_client_date
 CREATE INDEX idx_payments_client_date ON payments(client_id, received_date);
 -- idx_payments_received_date

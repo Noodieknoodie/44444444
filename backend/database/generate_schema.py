@@ -209,29 +209,30 @@ def clean_file_spacing(file_path):
 
 def main():
     parser = argparse.ArgumentParser(description='Generate database schemas and sample data.')
-    # Assume project root is the current working directory
-    project_root = Path.cwd()
     
-    parser.add_argument('--db', dest='database', default=str(project_root / "backend" / "database" / "401k_local_dev.db"),
+    # Lock to script location
+    project_root = Path(__file__).resolve().parent
+
+    parser.add_argument('--db', dest='database', default=str(project_root / "401k_local_dev.db"),
                         help='Path to SQLite database')
-    parser.add_argument('--compact', dest='compact_schema', default=str(project_root / "backend" / "database" / "compact_schema.txt"),
+    parser.add_argument('--compact', dest='compact_schema', default=str(project_root / "compact_schema.txt"),
                         help='Output path for compact schema')
-    parser.add_argument('--sql', dest='sql_schema', default=str(project_root / "backend" / "database" / "schema.sql"),
+    parser.add_argument('--sql', dest='sql_schema', default=str(project_root / "schema.sql"),
                         help='Output path for full SQL schema')
-    parser.add_argument('--data', dest='data_file', default=str(project_root / "backend" / "database" / "example_data.txt"),
+    parser.add_argument('--data', dest='data_file', default=str(project_root / "example_data.txt"),
                         help='Output path for sample data')
-    
+
     args = parser.parse_args()
-    
-    # Ensure output directories exist
+
+    # Ensure output directories exist (redundant here, but harmless)
     Path(os.path.dirname(args.compact_schema)).mkdir(parents=True, exist_ok=True)
     Path(os.path.dirname(args.sql_schema)).mkdir(parents=True, exist_ok=True)
     Path(os.path.dirname(args.data_file)).mkdir(parents=True, exist_ok=True)
-    
+
     conn = sqlite3.connect(args.database)
     conn.row_factory = sqlite3.Row
     cursor = conn.cursor()
-    
+
     try:
         generate_compact_schema(conn, args.compact_schema)
         print(f"Compact schema written to {args.compact_schema}")
@@ -249,6 +250,7 @@ def main():
         print(f"Error: {e}")
     finally:
         conn.close()
+
 
 if __name__ == "__main__":
     main()

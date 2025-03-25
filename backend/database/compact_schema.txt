@@ -8,8 +8,8 @@ clients: client_id(pk), display_name(nn), full_name, ima_signed_date, valid_from
 contracts: contract_id(pk), client_id(nn), contract_number, provider_id, fee_type, percent_rate, flat_rate, payment_schedule, num_people, valid_from(def:CURRENT_TIMESTAMP), valid_to, is_active(nn)(def:1)
 documents: document_id(pk), provider_id(nn)(fk:providers), document_type(nn), received_date(nn), file_name(nn), file_path(nn), metadata, uploaded_at(def:CURRENT_TIMESTAMP)
 document_clients: id(pk), document_id(nn)(fk:documents,cascade), client_id(nn)(fk:clients,cascade) UNIQUE(document_id,client_id)
-payment_documents: id(pk), payment_id(nn)(fk:payments,cascade), document_id(nn)(fk:documents,cascade) UNIQUE(payment_id,document_id)
 client_folders: client_id(pk)(fk:clients), actual_folder_name(nn)
+document_payments: id(pk), payment_id(nn)(fk:payments,cascade), document_id(nn)(fk:documents,cascade) UNIQUE(payment_id,document_id)
 [VIEWS]
 v_active_contracts: contracts
 v_payments: payments JOIN date_dimension
@@ -17,10 +17,11 @@ v_client_payment_first: payments JOIN contracts
 v_client_payment_last: payments JOIN contracts
 v_client_expected_periods: v_active_contracts JOIN client_providers JOIN payments JOIN date_dimension JOIN current_period
 v_current_period: current_info
-v_payment_period_coverage: date_dimension
 v_expanded_payment_periods: v_payments JOIN date_dimension
 v_all_missing_payment_periods: v_client_expected_periods JOIN v_expanded_payment_periods
 v_current_period_payment_status: v_active_contracts JOIN v_expanded_payment_periods
+v_payment_period_coverage: date_dimension
+v_split_payment_distribution: v_payments JOIN clients JOIN date_dimension
 [TRIGGERS]
 [INDEXES]
 payments(received_date)
@@ -28,13 +29,13 @@ payments(client_id, received_date)
 payments(valid_to)
 document_clients(document_id)
 document_clients(client_id)
-payment_documents(payment_id)
-payment_documents(document_id)
+document_payments(document_id)
+document_payments(payment_id)
 [RELATIONSHIPS]
 contacts → clients
 payments → contracts, clients
 client_providers → providers, clients
 documents → providers
 document_clients → clients, documents
-payment_documents → documents, payments
 client_folders → clients
+document_payments → payments, documents
