@@ -1,0 +1,206 @@
+can you do it again but have it generate a csv that does the following... so look at this script:
+
+import os
+
+import glob
+
+# Define the root path
+
+root_path = r"C:\Users\ErikKnudsen\Hohimer Wealth Management\Hohimer Company Portal - Company\Hohimer Team Shared 4-15-19\401Ks\Current Plans"
+
+# Define the fee folders to search
+
+fee_folders = [
+
+    os.path.join(root_path, "ABC Architects - Bumgardner", "Consulting Fee"),
+
+    os.path.join(root_path, "Air Sea America", "Consulting Fee"),
+
+    os.path.join(root_path, "Auction Edge", "Consulting Fee"),
+
+    os.path.join(root_path, "BDR", "Consulting Fee"),
+
+    os.path.join(root_path, "Bellmont Cabinets", "Consulting Fee"),
+
+    os.path.join(root_path, "CG Engineering", "Consulting Fee"),
+
+    os.path.join(root_path, "Corina Bakery", "Consulting Fee"),
+
+    os.path.join(root_path, "Dakota Creek Industries", "Consulting Fee"),
+
+    os.path.join(root_path, "Fast Water Heater", "Consulting Fee"),
+
+    os.path.join(root_path, "Floform Countertops", "Consulting Fee"),
+
+    os.path.join(root_path, "Hansen Brothers", "Consulting Fee"),
+
+    os.path.join(root_path, "Harper Engineering", "Consulting Fee"),
+
+    os.path.join(root_path, "Hohimer 401K", "Consulting Fee"),
+
+    os.path.join(root_path, "Hos Bros. Construction", "Consulting Fee"),
+
+    os.path.join(root_path, "INTERNAL PLANS", "Creative Bros Landscape"),
+
+    os.path.join(root_path, "INTERNAL PLANS", "Dearborn Lumber"),
+
+    os.path.join(root_path, "INTERNAL PLANS", "Delta Electric"),
+
+    os.path.join(root_path, "INTERNAL PLANS", "Eastside Electric"),
+
+    os.path.join(root_path, "INTERNAL PLANS", "J. Miller Cabinet Co"),
+
+    os.path.join(root_path, "INTERNAL PLANS", "Pacific Wings, LLC"),
+
+    os.path.join(root_path, "INTERNAL PLANS", "Public Defender Association"),
+
+    os.path.join(root_path, "Lynnwood Enterprises", "Consulting Fee"),
+
+    os.path.join(root_path, "Marten Law Group", "Consulting Fee"),
+
+    os.path.join(root_path, "Mobile Focused Media", "Consulting Fee"),
+
+    os.path.join(root_path, "Moxi Works", "Consulting Fee"),
+
+    os.path.join(root_path, "National Nordic Museum 403(b)", "Consulting Fee"),
+
+    os.path.join(root_path, "Opportunity Interactive", "Consulting Fee"),
+
+    os.path.join(root_path, "Puget Sound Window", "Consulting Fee"),
+
+    os.path.join(root_path, "TEMPLATE", "Consulting Fee"),
+
+    os.path.join(root_path, "Three Sigma", "Consulting Fee"),
+
+    os.path.join(root_path, "Tony's Coffee", "Consulting Fee"),
+
+    os.path.join(root_path, "United Way King County 403(b)", "Consulting Fee"),
+
+    os.path.join(root_path, "URG", "Consulting Fee"),
+
+    os.path.join(root_path, "XFire Industries", "Consulting Fee"),
+
+    os.path.join(root_path, "Younker Motors", "Consulting Fee"),
+
+    os.path.join(root_path, "Youth Dynamics", "Consulting Fee")
+
+]
+
+def find_pdf_files(folder_path):
+
+    """Find all PDF files in a folder and its subfolders"""
+
+    if not os.path.exists(folder_path):
+
+        print(f"Folder not found: {folder_path}")
+
+        return []
+
+    
+
+    print(f"Searching in: {folder_path}")
+
+    pdf_pattern = os.path.join(folder_path, "**", "*.pdf")
+
+    return glob.glob(pdf_pattern, recursive=True)
+
+# Main script
+
+print("Starting search for PDF files in fee folders...")
+
+pdf_files = []
+
+for folder in fee_folders:
+
+    pdf_files.extend(find_pdf_files(folder))
+
+# Print all PDF files found
+
+for pdf_file in pdf_files:
+
+    print(pdf_file)
+
+print(f"Search completed. Found {len(pdf_files)} PDF files.")
+
+# Optionally, save the results to a file
+
+# with open("fee_pdf_files.txt", "w") as f:
+
+#     for pdf_file in pdf_files:
+
+#         f.write(f"{pdf_file}\n")
+
+---
+
+and then look at the why wthings are spelled in the DB and which clients made the cut:
+
+client_id	display_name	full_name
+
+1	AirSea America	THE TRUSTEES OF AIRSEA AMERICA INC 401K PLAN AND TRUST
+
+2	Bumgardner Architects (ABC)	THE BUMGARDNER ARCHITECTS A WASHINGTON CORPORATION PROFIT
+
+3	Amplero	AMPLERO INC 401K
+
+4	Auction Edge	AUCTION EDGE Inc 401k Profit Sharing Plan
+
+5	BDR Interactive	BUSINESS DEVELOPMENT RESOURCES & OPPORTUNITIES INTERACTIVE
+
+6	Bellmont Cabinets	BELLMONT CABINETS
+
+7	Corina Bakery	CORINA BAKERY
+
+8	Dakota Creek	DAKOTA CREEK INDUSTRIES
+
+9	CG Engineering	CG ENGINEERING PLLC
+
+10	Fast Water Heater	FAST WATER HEATER CO
+
+11	Floform	FLOFORM COUNTERTOPS
+
+12	Hansen Bros	HANSEN BROS TRANSFER & STORAGE CO
+
+13	Harper Engineering	HARPER ENGINEERING 401K PROFIT SHARING PLAN
+
+14	Hos Bros	HOS BROS CONSTRUCTION INC
+
+15	Lavle USA	LAVLE USA INC 401K
+
+16	Lynnwood Honda	LYNNWOOD ENTERPRISES INC 401K
+
+17	Nordic Museum	NATIONAL NORDIC MUSEUM
+
+18	Marten Law	MARTEN LAW GROUP PLLC
+
+19	Opportunity Interactive	OPPORTUNITY INTERACTIVE
+
+20	MoxiWorks	MOXIWORKS
+
+21	Mobile Focused	MOBILE FOCUSED MEDIA
+
+22	PSWM Inc	PSWM INC 401K PLAN AND TRUST
+
+23	Three Sigma	THREE SIGMA
+
+24	Tony's Coffee	TONYS COFFEE
+
+25	United Way	UWKC
+
+26	Urban Renaissance	URBAN RENAISSANCE 401K AND TRUST
+
+27	XFire	XFIRE INDUSTRIES INC 401K PLAN
+
+28	Younker Motors	YOUNKER MOTORS
+
+29	Youth Dynamics	YOUTH DYNAMICS
+
+30	ABC Company	ABC Testing Company LLC
+
+31	XYZ Inc	XYZ Incorporated
+
+then look at what i have to generate
+
+document_id	provider_id	document_type	received_date	file_name	file_path	metadata	uploaded_at
+
+then look at the client_provider interaction table...
+
