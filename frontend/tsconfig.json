@@ -22,6 +22,6 @@
       "@/*": ["./src/*"]
     }
   },
-  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
+  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts", "../WIREFRAME/components/client-dashboard.tsx", "../WIREFRAME/components/client-details.tsx", "../WIREFRAME/components/client-sidebar.tsx", "../WIREFRAME/components/client-snapshot.tsx", "../WIREFRAME/components/contact-panel.tsx", "../WIREFRAME/components/dashboard-shell.tsx", "../WIREFRAME/components/edit-payment-form.tsx", "../WIREFRAME/components/missed-payments-alert.tsx", "../WIREFRAME/components/missed-payments-notice.tsx", "../WIREFRAME/components/payment-form.tsx", "../WIREFRAME/components/payment-history.tsx", "../WIREFRAME/components/theme-provider.tsx", "../WIREFRAME/components/top-navigation.tsx", "../WIREFRAME/components/attachment-viewer.tsx"],
   "exclude": ["node_modules"]
 }
