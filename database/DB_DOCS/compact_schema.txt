@@ -1,0 +1,41 @@
+[TABLES]
+contacts: contact_id(pk), client_id(nn)(fk:clients,cascade), contact_type(nn), contact_name, phone, email, fax, physical_address, mailing_address, valid_from(def:CURRENT_TIMESTAMP), valid_to
+payments: payment_id(pk), contract_id(nn)(fk:contracts,cascade), client_id(nn)(fk:clients,cascade), received_date, total_assets, actual_fee, method, notes, valid_from(def:CURRENT_TIMESTAMP), valid_to, applied_start_month, applied_start_month_year, applied_end_month, applied_end_month_year, applied_start_quarter, applied_start_quarter_year, applied_end_quarter, applied_end_quarter_year
+client_providers: client_id(pk)(fk:clients), provider_id(pk)(fk:providers), start_date, end_date, is_active(def:1) UNIQUE(client_id,provider_id)
+date_dimension: period_date(pk)(unique), year(nn), month, month_name, quarter, period_key_monthly(nn), period_key_quarterly(nn), display_label_monthly(nn), display_label_quarterly(nn), is_current_monthly(def:0), is_current_quarterly(def:0), is_previous_month(def:0), is_previous_quarter(def:0)
+providers: provider_id(pk), provider_name(nn), valid_from(def:CURRENT_TIMESTAMP), valid_to
+clients: client_id(pk), display_name(nn), full_name, ima_signed_date, valid_from(def:CURRENT_TIMESTAMP), valid_to
+contracts: contract_id(pk), client_id(nn), contract_number, provider_id, fee_type, percent_rate, flat_rate, payment_schedule, num_people, valid_from(def:CURRENT_TIMESTAMP), valid_to, is_active(nn)(def:1)
+documents: document_id(pk), provider_id(nn)(fk:providers), document_type(nn), received_date(nn), file_name(nn), file_path(nn), metadata, uploaded_at(def:CURRENT_TIMESTAMP)
+document_clients: id(pk), document_id(nn)(fk:documents,cascade), client_id(nn)(fk:clients,cascade) UNIQUE(document_id,client_id)
+client_folders: client_id(pk)(fk:clients), actual_folder_name(nn)
+document_payments: id(pk), payment_id(nn)(fk:payments,cascade), document_id(nn)(fk:documents,cascade) UNIQUE(payment_id,document_id)
+[VIEWS]
+v_active_contracts: contracts
+v_payments: payments JOIN date_dimension
+v_client_payment_first: payments JOIN contracts
+v_client_payment_last: payments JOIN contracts
+v_client_expected_periods: v_active_contracts JOIN client_providers JOIN payments JOIN date_dimension JOIN current_period
+v_current_period: current_info
+v_expanded_payment_periods: v_payments JOIN date_dimension
+v_all_missing_payment_periods: v_client_expected_periods JOIN v_expanded_payment_periods
+v_current_period_payment_status: v_active_contracts JOIN v_expanded_payment_periods
+v_payment_period_coverage: date_dimension
+v_split_payment_distribution: v_payments JOIN clients JOIN date_dimension
+[TRIGGERS]
+[INDEXES]
+payments(received_date)
+payments(client_id, received_date)
+payments(valid_to)
+document_clients(document_id)
+document_clients(client_id)
+document_payments(document_id)
+document_payments(payment_id)
+[RELATIONSHIPS]
+contacts → clients
+payments → contracts, clients
+client_providers → providers, clients
+documents → providers
+document_clients → clients, documents
+client_folders → clients
+document_payments → payments, documents
