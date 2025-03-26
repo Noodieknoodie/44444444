@@ -1,0 +1,106 @@
+Also please read the cheat sheet for modern coding if your knowledge cutoff is older
+
+FASTAPI ENDPOINTS & DECORATORS
+- Use APIRouter per domain (items_router, users_router), then include in main app with prefixes/tags
+- Keep endpoint functions lean: parse input via Pydantic, call service/CRUD, return validated output
+- Use async def for I/O-bound ops; use Depends or Annotated[Type, Depends(...)] for common needs (DB, auth)
+- response_model enforces output schema; rely on Pydantic v2 models
+- FastAPI 0.115.x+ uses newer Starlette (v0.46.0); if old usage is detected, update dependencies
+
+SAFE & EFFICIENT RAW SQL (NO ORM)
+- Manage connections with sqlite3.connect() per request/thread; close after yield
+- Use PRAGMAs like journal_mode=WAL, synchronous=NORMAL for concurrency & performance
+- Use parameterized queries (cursor.execute("SELECT * FROM items WHERE id=?", (value,)))
+- For repeated queries, consider prepared statements; wrap inserts in transactions
+- Return rows via sqlite3.Row or dict, parse to Pydantic models for validation
+- Keep transactions short; index frequent queries; use EXPLAIN QUERY PLAN to identify bottlenecks
+
+DIRECTORY STRUCTURE (MODEST SIZE)
+app/
+- api/ (router modules, e.g. items.py, users.py; may have endpoints/ subfolder)
+- core/ (config, security, etc.)
+- db/ (database.py for connection, queries/ for raw SQL ops)
+- models/ (domain models, schemas)
+- main.py (FastAPI creation, router inclusion)
+
+FASTAPI DEPENDENCY INJECTION UPDATES
+- Current best practice: Annotated[Type, Depends(...)] is preferred over def get_items(db: Database = Depends(...))
+- Starlette exception handling integrates with FastAPI exception handlers; use global handlers for consistency
+- Use custom exceptions or HTTPException for clear error responses
+
+FASTAPI EXAMPLES
+- openapi_examples= replaces examples= in Body/Field
+- Use status.HTTP_201_CREATED, etc., from fastapi.status
+- For partial validation, Pydantic v2.11 supports experimental_allow_partial
+- If environment is large, consider fastapi-slim to reduce extra dependencies
+
+PYDANTIC (V2.11+)
+- @validator, @root_validator -> @field_validator, @model_validator
+- parse_obj -> model_validate, parse_raw -> model_validate_json, .json() -> model_dump_json()
+- Config -> model_config dict; e.g. model_config = {"from_attributes": True}
+- Performance improvements; type adapters (TypeAdapter) for batch parsing
+- Support for partial validation, new generics syntax (PEP 695), better fraction handling
+- validate_assignment=True, validate_default=True now recommended for robust data integrity
+
+SQLITE PERFORMANCE OPTIMIZATION
+- WAL mode, synchronous=OFF or NORMAL, temp_store=MEMORY, cache_size=-64000
+- Transactions: BEGIN...COMMIT for batch inserts (up to 50x faster)
+- Prepared statements for repeated queries
+- EXPLAIN QUERY PLAN to detect table scans and missing indexes
+
+NEXT.JS (V15) & REACT (V19)
+- Next.js App Directory recommended; Pages router is legacy
+- Server components default, client components marked with "use client"
+- React 19 includes Actions for data mutations, useOptimistic for optimistic UI, improved transitions
+- Next.js 15 changes default caching (fetch calls no longer cached by default); configure explicitly
+- Server Actions reduce need for custom API routes in simple form use cases
+- Integrate with FastAPI by fetching data in server components or client fetch hooks (React Query, SWR)
+- For type safety, generate TS types from FastAPI OpenAPI or share schema via Zod/Pydantic
+
+TAILWIND CSS (V4.0)
+- Removed text-opacity-* and flex-grow-; use color opacity (text-red-500/50) and grow/shrink
+- CSS-first config with @theme directive for design tokens; no tailwind.config.js required
+- JIT always on, faster incremental builds
+- Container queries (@container), 3D transforms (rotate3d-[]), not- variant, advanced gradient syntax
+- Border classes no longer default to gray; specify color (border-gray-200, etc.)
+
+PYTHON (3.12+)
+- Type parameter syntax: def func[T](x: list[T]) -> T:
+- F-strings allow multiline, inline comments (PEP 701)
+- distutils deprecated; use setuptools or packaging
+- importlib replaces imp
+- If using subinterpreters, partial GIL improvements in 3.12; not typically relevant for standard FastAPI usage
+
+MAJOR CHANGELOGS (MARCH 2024–MARCH 2025)
+- FastAPI 0.100+ fully supports Pydantic v2; as of 0.115.x, Starlette up to 0.46.x
+- Pydantic 2.0+ introduced Rust-based validation, new validator decorators
+- Next.js 13+ App Router stable, Next.js 15 adds Server Actions & caching changes
+- React 19 adds useActionState, useOptimistic, new form actions
+- Tailwind 4 drops legacy utilities, moves to CSS-first config
+- Python 3.12 adds typed param syntax, improved f-strings, partial GIL changes
+
+ERROR HANDLING & EXCEPTIONS
+- Use custom exceptions (e.g. DatabaseError) with FastAPI’s exception_handler
+- 500 for unexpected errors, status codes from fastapi.status
+- For user input or domain errors, raise HTTPException with appropriate status_code
+
+HOT TIPS
+- Generate typed API clients from OpenAPI (openapi-typescript-codegen or similar)
+- Use ruff + Black for Python lint/format, ESLint + Prettier for Next.js
+- Use typed end-to-end contracts (Zod or Pydantic JSON Schema -> TS types)
+- Minimally rely on global state; prefer server-driven UI, React Query, or SWR for data fetching
+- For large internal projects, consider partial migration to fastapi-slim
+- For purely Python-based full-stack, check Reflex (Pynecone) or keep standard Next + Python approach
+
+HERE’S A SIMPLER WAY
+- Next.js Server Actions let you skip dedicated API routes for simple form updates
+- React 19’s useOptimistic hook for simpler optimistic updates
+- Pydantic TypeAdapter for quick batch validations; no need for manual loops
+- For smaller internal dashboards, consider Streamlit or NiceGUI instead of full Next + FastAPI
+
+EMERGING ALTERNATIVES
+- Litestar (Starlite) with extra features and performance vs. FastAPI
+- fastapi-slim to reduce dependencies
+- Reflex (Pynecone) for Python-defined UIs that compile to React/Next
+- Blitz.js 2 for zero-API approach with Next
+- Low-code tools (Retool, Appsmith) for simple CRUD apps

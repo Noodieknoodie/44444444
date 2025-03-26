@@ -1,17 +1,7 @@
 ----------------
-SAMPLE DATA
+SAMPLE DATA RAW FROM THE DATABASE 
 ----------------
--- TABLE: client_folders
-client_id, actual_folder_name
-1, Air Sea America
-2, ABC Architects - Bumgardner
-3,
-14, Hos Bros. Construction
-15,
-16, Lynnwood Enterprises
-27, XFire Industries
-28, Younker Motors
-29, Youth Dynamics
+
 -- TABLE: client_providers
 client_id, provider_id, start_date, end_date, is_active
 1, 8, 2019-05-03, NULL, 1
@@ -67,12 +57,6 @@ period_date, year, month, month_name, quarter, period_key_monthly, period_key_qu
 2018-10-01, 2018, 10, Oct, 4, 201810, 20184, Oct 2018, Q4 2018, 0, 0, 0, 0
 2018-11-01, 2018, 11, Nov, 4, 201811, 20184, Nov 2018, Q4 2018, 0, 0, 0, 0
 2018-12-01, 2018, 12, Dec, 4, 201812, 20184, Dec 2018, Q4 2018, 0, 0, 0, 0
--- TABLE: document_clients
-id, document_id, client_id
-1, 1, 30
--- TABLE: documents
-document_id, provider_id, document_type, received_date, file_name, file_path, metadata, uploaded_at
-1, 6, Check, 2025-02-20, 20250323_162258_Fidelity_Check.pdf, C:\CODING\401401401\dev_environment\document_storage\20250323_162258_Fidelity_Check.pdf, NULL, 2025-03-23 23:22:58
 -- TABLE: payments
 payment_id, contract_id, client_id, received_date, total_assets, actual_fee, method, notes, valid_from, valid_to, applied_start_month, applied_start_month_year, applied_end_month, applied_end_month_year, applied_start_quarter, applied_start_quarter_year, applied_end_quarter, applied_end_quarter_year
 1, 1, 1, 2019-05-03, 824305, 547.51, Auto - Check, waiting on how John Hancock calculates fee payments, 2025-03-14 03:57:29, NULL, 4, 2019, 4, 2019, NULL, NULL, NULL, NULL
