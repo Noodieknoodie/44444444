@@ -16,12 +16,14 @@ async def get_providers(
 ):
     """Get all active providers"""
     with get_connection() as conn:
-        query = "SELECT * FROM providers WHERE valid_to IS NULL"
-        params = []
-        
+        # If querying by ID, show even soft-deleted providers
         if provider_id is not None:
-            query += " AND provider_id = ?"
-            params.append(provider_id)
+            query = "SELECT * FROM providers WHERE provider_id = ?"
+            params = [provider_id]
+        else:
+            # Otherwise only show active providers
+            query = "SELECT * FROM providers WHERE valid_to IS NULL"
+            params = []
             
         # Count total
         count_query = f"SELECT COUNT(*) as total FROM ({query})"

@@ -10,7 +10,7 @@ class PaymentModel(BaseModel):
     contract_id: int
     client_id: int
     received_date: Optional[str] = None
-    total_assets: Optional[int] = None
+    total_assets: Optional[float] = None  # Changed from int to float
     actual_fee: Optional[float] = None
     method: Optional[str] = None
     notes: Optional[str] = None
@@ -34,7 +34,7 @@ class PaymentViewModel(BaseModel):
     contract_id: int
     client_id: int
     received_date: date
-    total_assets: Optional[int] = None
+    total_assets: Optional[float] = None  # Changed from int to float
     actual_fee: float
     method: Optional[str] = None
     notes: Optional[str] = None
@@ -109,6 +109,7 @@ class PaymentStatusViewModel(BaseModel):
     period_key: int
     period_label: str
     status: str
+    display_name: Optional[str] = None  # Add optional field for display name
     
     model_config = {"from_attributes": True}
 
@@ -117,7 +118,7 @@ class PaymentCreate(BaseModel):
     contract_id: int
     client_id: int
     received_date: Optional[str] = None
-    total_assets: Optional[int] = None
+    total_assets: Optional[float] = None  # Changed from int to float
     actual_fee: Optional[float] = None
     method: Optional[str] = None
     notes: Optional[str] = None
@@ -133,7 +134,7 @@ class PaymentCreate(BaseModel):
 class PaymentUpdate(BaseModel):
     contract_id: Optional[int] = None
     received_date: Optional[str] = None
-    total_assets: Optional[int] = None
+    total_assets: Optional[float] = None  # Changed from int to float
     actual_fee: Optional[float] = None
     method: Optional[str] = None
     notes: Optional[str] = None

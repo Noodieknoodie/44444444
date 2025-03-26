@@ -1,5 +1,5 @@
-@echo off 
-cd /d "%%~dp0backend" 
-call venv\Scripts\activate.bat 
-uvicorn main:app --port 6069 
-pause
+@echo off
+cd backend
+call env\Scripts\activate.bat
+set PYTHONPATH=%CD%
+uvicorn app.main:app --reload

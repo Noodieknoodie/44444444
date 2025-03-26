@@ -1,17 +1,25 @@
-# app/main.py
+# backend/main.py
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from fastapi.openapi.docs import get_swagger_ui_html
 from fastapi.openapi.utils import get_openapi
+import logging
+
+# Set up logging
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+logger = logging.getLogger(__name__)
+
+# Import date utilities
+from .date_utils import update_date_flags
 
 # Import all routers
-from api.clients import router as clients_router
-from api.contracts import router as contracts_router
-from api.payments import router as payments_router
-from api.documents import router as documents_router
-from api.providers import router as providers_router
-from api.dates import router as dates_router
+from .api.clients import router as clients_router
+from .api.contracts import router as contracts_router
+from .api.payments import router as payments_router
+from .api.documents import router as documents_router
+from .api.providers import router as providers_router
+from .api.dates import router as dates_router
 
 # Create FastAPI app
 app = FastAPI(
@@ -20,6 +28,16 @@ app = FastAPI(
     version="1.0.0",
     docs_url=None,  # Disable default docs
 )
+
+# Update date flags on startup
+@app.on_event("startup")
+async def startup_event():
+    logger.info("Updating date dimension flags on startup")
+    success = update_date_flags()
+    if success:
+        logger.info("Date dimension flags updated successfully")
+    else:
+        logger.warning("Failed to properly update date dimension flags")
 
 # Configure CORS to allow requests from the Next.js frontend
 app.add_middleware(
@@ -48,8 +66,8 @@ async def global_exception_handler(request: Request, exc: Exception):
             content={"detail": exc.detail},
         )
     
-    # Log the exception here (not implemented)
-    # logger.error(f"Unhandled exception: {str(exc)}")
+    # Log the exception
+    logger.error(f"Unhandled exception: {str(exc)}")
     
     # Return a generic error for unhandled exceptions
     return JSONResponse(
@@ -180,7 +198,7 @@ async def structure_reference():
             "provider_id": 301,
             "fee_type": "Percentage",
             "percent_rate": 0.75,
-            "flat_rate": null,
+            "flat_rate": None,
             "payment_schedule": "monthly",
             "is_active": 1
         }
