@@ -1,3 +1,5 @@
+# frontend/src/app/api.ts
+
 // API client for interacting with the backend
 
 const API_BASE_URL = 'http://localhost:8000';
